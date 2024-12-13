@@ -55,24 +55,30 @@ function setupForm () {
   })
 }
 
+function submitNewView () {
+  const viewCounterForm = document.forms['viewCounter'];
+  viewCounterForm.action = formActionURL;
+  viewCounterForm.submit(); 
+}
+
 async function init () {
-  visitorID = localStorage.getItem('visitorID') ?? newVisitorID();
-  const isRevisit = false;
+  visitorID = localStorage.getItem('visitorID');
+  const isRevisit = visitorID ?? false;
   if (! isRevisit) {
-    const viewCounterFormID = document.forms['viewCounter'].elements['FormID'].value;
+    // Check if public key is derived alright from the address bar
     try {
-      const response = await fetch(formActionURL, {
-        mode: 'no-cors',
-        method: 'POST',
-        body: JSON.stringify({ FormID: viewCounterFormID }),
-        headers: {'Content-Type': 'application/json'}
-      })
-      if (response.status != 200) throw new Error();
+      const response = await fetch(formActionURL.replace('public', 'keys'));
+      console.log(formActionURL.replace('public', 'keys'));
+      if (!response.ok) throw new Error(404);
+      const type = await response.json().then((obj) => obj.type);
+      if (type !== 'public') throw new Error(404);
     } catch (err) {
       spaShow('404');
       console.error(err);
       return false;
     }
+    submitNewView();
+    visitorID = newVisitorID();
   }
   
   setupForm();
