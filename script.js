@@ -56,18 +56,18 @@ function setupForm () {
 }
 
 async function init () {
-  visitorID = localStorage.getItem('visitorID');
-  const isRevisit = visitorID ?? false;
+  visitorID = localStorage.getItem('visitorID') ?? newVisitorID();
+  const isRevisit = false;
   if (! isRevisit) {
     const viewCounterFormID = document.forms['viewCounter'].elements['FormID'].value;
     try {
       const response = await fetch(formActionURL, {
+        mode: 'no-cors',
         method: 'POST',
         body: JSON.stringify({ FormID: viewCounterFormID }),
         headers: {'Content-Type': 'application/json'}
       })
       if (response.status != 200) throw new Error();
-      visitorID = newVisitorID();
     } catch (err) {
       spaShow('404');
       console.error(err);
