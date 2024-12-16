@@ -1,94 +1,99 @@
 import securelayEndpoint from 'https://cdn.jsdelivr.net/gh/securelay/api@v0.0.1/script.js';
 
-const securelayAddrKey = decodeURIComponent(location.pathname.split('/').pop());
-const [ securelayPubKey, securelayEndpointID ] = securelayAddrKey.split('@');
-const securelayEndpointURL = securelayEndpoint(securelayEndpointID)[0];
-
-const formActionURL = securelayEndpointURL + '/public/' + securelayPubKey;
-
-let visitorID;
-let chatURL;
-
 // Brief: Returns the first 5 hex chars from a v4 UUID as a unique string
 function newVisitorID () {
-  const id = crypto.randomUUID().substr(0,5);
-  localStorage.setItem('visitorID', id);
-  return id;
+  return crypto.randomUUID().substr(0, 5);
 }
 
-function logChat (msg, received=true) {
+// Brief: Returns {formActionURL, visitorID} if ok, Booelan false otherwise.
+async function validate () {
+  const securelayAddrKey = decodeURIComponent(location.pathname.split('/').pop());
+  const [securelayPubKey, securelayEndpointID] = securelayAddrKey.split('@');
+  if (!(securelayPubKey && securelayEndpointID)) return false;
+
+  try {
+    const securelayEndpointURL = securelayEndpoint(securelayEndpointID)[0];
+    const formActionURL = securelayEndpointURL + '/public/' + securelayPubKey;
+    const cacheKey = ('visitorID@' + securelayAddrKey);
+    const oldVisitorID = localStorage.getItem(cacheKey);
+    if (oldVisitorID) return { formActionURL, visitorID: oldVisitorID };
+
+    const response = await fetch(formActionURL.replace('public', 'keys'));
+    if (!response.ok) throw new Error(404);
+    const type = await response.json().then((obj) => obj.type);
+    if (type !== 'public') throw new Error(404);
+
+    const visitorID = newVisitorID();
+    localStorage.setItem(cacheKey, visitorID);
+    submitNewView(formActionURL);
+    return { formActionURL, visitorID };
+  } catch (err) {
+    return false;
+  }
+}
+
+function logChat (msg, received = true) {
   const chatbox = document.getElementById('chatbox');
   const row = document.createElement('p');
   let sender = 'You';
-  if(received) sender = 'Me';
-  const entry = `${sender}[${Date()}]: ${msg}`
+  if (received) sender = 'Me';
+  const entry = `${sender}[${Date()}]: ${msg}`;
   row.append(entry);
   chatbox.prepend(row);
 }
 
-async function loadReply () {
-  await fetch(chatURL)
-      .then((response) => {
-        if (!response.ok) throw new Error(response.status);
-        return response.json();
-      })
-      .then((data) => data['Message'])
-      .then((reply) => { 
-        logChat(reply);
-      })
-      .catch((err) => true);
+async function loadReply (chatURL) {
+  return fetch(chatURL)
+    .then((response) => {
+      if (!response.ok) throw new Error(response.status);
+      return response.json();
+    })
+    .then((data) => data.Message)
+    .then((reply) => {
+      logChat(reply);
+    })
+    .catch((err) => err.message);
 }
 
-function setupForm () {
+function setupForm (formActionURL, visitorID) {
   const contactForm = document.forms.contact;
   const checkImgURL = 'https://img.icons8.com/color/30/approval--v1.png';
   const crossImgURL = 'https://img.icons8.com/emoji/30/cross-mark-emoji.png';
   const query = `?ok=${encodeURIComponent(checkImgURL)}&err=${encodeURIComponent(crossImgURL)}`;
-  contactForm.elements['ChatID'].value = visitorID;
+  contactForm.elements.ChatID.value = visitorID;
   contactForm.action = formActionURL + query;
-  
+
   contactForm.addEventListener('submit', async (event) => {
     const thisForm = event.target;
-    await loadReply();
-    const msg = thisForm.elements['Message'].value;
+    await loadReply(formActionURL + '/' + visitorID);
+    const msg = thisForm.elements.Message.value;
     logChat(msg, false);
-  })
+  });
 }
 
-function submitNewView () {
-  const viewCounterForm = document.forms['viewCounter'];
+function submitNewView (formActionURL) {
+  const viewCounterForm = document.forms.viewCounter;
   viewCounterForm.action = formActionURL;
-  viewCounterForm.submit(); 
+  viewCounterForm.submit();
 }
 
 async function init () {
-  visitorID = localStorage.getItem('visitorID');
-  const isRevisit = visitorID ?? false;
-  if (! isRevisit) {
-    // Check if public key is derived alright from the address bar
-    try {
-      const response = await fetch(formActionURL.replace('public', 'keys'));
-      console.log(formActionURL.replace('public', 'keys'));
-      if (!response.ok) throw new Error(404);
-      const type = await response.json().then((obj) => obj.type);
-      if (type !== 'public') throw new Error(404);
-    } catch (err) {
-      spaShow('404');
-      console.error(err);
-      return false;
-    }
-    submitNewView();
-    visitorID = newVisitorID();
+  const { formActionURL, visitorID } = await validate();
+  spaHide('loading');
+  if (!formActionURL) {
+    spaShow('404');
+    return false;
   }
-  
-  setupForm();
+
+  setupForm(formActionURL, visitorID);
   spaShow('form');
-  
-  chatURL = formActionURL + '/' + visitorID;
-  await loadReply();
+
+  const chatURL = formActionURL + '/' + visitorID;
+
+  await loadReply(chatURL);
   document.getElementById('loadReply').addEventListener('click', (event) => {
-    loadReply();
-  })
+    loadReply(chatURL);
+  });
   spaShow('chat');
 }
 
