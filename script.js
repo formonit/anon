@@ -55,7 +55,18 @@ async function loadReply (chatURL) {
     .catch((err) => err.message);
 }
 
-function setupForm (formActionURL, visitorID) {
+async function geolocateByIP () {
+  const apiEndpoint = 'http://ip-api.com/json/?fields=25';
+  return fetch(apiEndpoint)
+    .then ((response) => {
+      if (!response.ok) throw new Error(response.status);
+      return response.json();
+    })
+    .then((obj) => obj)
+    .catch((err) => false);
+}
+
+async function setupForm (formActionURL, visitorID) {
   const contactForm = document.forms.contact;
   const checkImgURL = 'https://img.icons8.com/color/30/approval--v1.png';
   const crossImgURL = 'https://img.icons8.com/emoji/30/cross-mark-emoji.png';
@@ -69,6 +80,10 @@ function setupForm (formActionURL, visitorID) {
     const msg = thisForm.elements.Message.value;
     logChat(msg, false);
   });
+  
+  const geolocationObj = await geolocateByIP();
+  let geolocation = Object.values(geolocationObj).join('/');
+  contactForm.elements['location'].value = geolocation;
 }
 
 function submitNewView (formActionURL) {
@@ -85,7 +100,7 @@ async function init () {
     return false;
   }
 
-  setupForm(formActionURL, visitorID);
+  await setupForm(formActionURL, visitorID);
   spaShow('form');
 
   const chatURL = formActionURL + '/' + visitorID;
