@@ -56,14 +56,14 @@ async function loadReply (chatURL) {
 }
 
 async function geolocateByIP () {
-  const apiEndpoint = 'http://ip-api.com/json/?fields=25';
+  const apiEndpoint = 'https://ipapi.co/json/'; //'http://ip-api.com/json/?fields=25';
   return fetch(apiEndpoint)
     .then ((response) => {
       if (!response.ok) throw new Error(response.status);
       return response.json();
     })
-    .then((obj) => obj)
-    .catch((err) => false);
+    .then((obj) => [obj.country_name, obj.region, obj.city].join('/'))
+    .catch((err) => '');
 }
 
 async function setupForm (formActionURL, visitorID) {
@@ -81,9 +81,7 @@ async function setupForm (formActionURL, visitorID) {
     logChat(msg, false);
   });
   
-  const geolocationObj = await geolocateByIP();
-  let geolocation = Object.values(geolocationObj).join('/');
-  contactForm.elements['location'].value = geolocation;
+  contactForm.elements['location'].value = await geolocateByIP();
 }
 
 function submitNewView (formActionURL) {
