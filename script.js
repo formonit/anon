@@ -37,7 +37,7 @@ function logChat (msg, received = true) {
   const row = document.createElement('p');
   let sender = 'You';
   if (received) sender = 'Me';
-  const entry = `${sender}[${Date()}]: ${msg}`;
+  const entry = `${sender} @ ${Date().split(' ')[4]}: ${msg}`;
   row.append(entry);
   chatbox.prepend(row);
 }
