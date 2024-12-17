@@ -14,7 +14,7 @@ async function validate () {
   try {
     const securelayEndpointURL = securelayEndpoint(securelayEndpointID)[0];
     const formActionURL = securelayEndpointURL + '/public/' + securelayPubKey;
-    const cacheKey = ('visitorID@' + securelayAddrKey);
+    const cacheKey = ('visitorID@' + location.pathname);
     const oldVisitorID = localStorage.getItem(cacheKey);
     if (oldVisitorID) return { formActionURL, visitorID: oldVisitorID };
 
