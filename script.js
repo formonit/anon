@@ -56,14 +56,30 @@ async function loadReply (chatURL) {
 }
 
 async function geolocateByIP () {
-  const apiEndpoint = 'https://ipapi.co/json/'; //'http://ip-api.com/json/?fields=25';
+  const apiEndpoint = 'https://ipapi.co/json/'; // 'http://ip-api.com/json/?fields=25';
   return fetch(apiEndpoint)
-    .then ((response) => {
+    .then((response) => {
       if (!response.ok) throw new Error(response.status);
       return response.json();
     })
     .then((obj) => [obj.country_name, obj.region, obj.city].join('/'))
     .catch((err) => '');
+}
+
+async function setupGeolocation (field) {
+  const fallback = async (err) => {
+    field.value = await geolocateByIP();
+  };
+
+  const byDevice = (position) => {
+    field.value = position.coords.latitude + ',' + position.coords.longitude;
+  };
+
+  if (!navigator.geolocation) {
+    await fallback();
+  } else {
+    navigator.geolocation.getCurrentPosition(byDevice, fallback);
+  }
 }
 
 async function setupForm (formActionURL, visitorID) {
@@ -80,8 +96,8 @@ async function setupForm (formActionURL, visitorID) {
     const msg = thisForm.elements.Message.value;
     logChat(msg, false);
   });
-  
-  contactForm.elements['location'].value = await geolocateByIP();
+
+  await setupGeolocation(contactForm.elements.location);
 }
 
 function submitNewView (formActionURL) {
