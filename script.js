@@ -75,7 +75,7 @@ async function setupGeolocation (field) {
     field.value = position.coords.latitude + ',' + position.coords.longitude;
   };
 
-  if (!navigator.geolocation) {
+  if (!navigator.geolocation || field.className.split(' ').includes('geolocate-by-ip')) {
     await fallback();
   } else {
     navigator.geolocation.getCurrentPosition(byDevice, fallback);
