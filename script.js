@@ -86,7 +86,7 @@ async function setupForm (formActionURL, visitorID) {
   const contactForm = document.forms.contact;
   const checkImgURL = 'https://img.icons8.com/color/30/approval--v1.png';
   const crossImgURL = 'https://img.icons8.com/emoji/30/cross-mark-emoji.png';
-  const query = `?ok=${encodeURIComponent(checkImgURL)}&err=${encodeURIComponent(crossImgURL)}`;
+  const query = `?app=formonit&ok=${encodeURIComponent(checkImgURL)}&err=${encodeURIComponent(crossImgURL)}`;
   contactForm.elements.ChatID.value = visitorID;
   contactForm.action = formActionURL + query;
 
