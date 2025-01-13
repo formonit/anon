@@ -48,7 +48,7 @@ async function loadReply (chatURL) {
       if (!response.ok) throw new Error(response.status);
       return response.json();
     })
-    .then((data) => data.Message)
+    .then((data) => data.data.Message)
     .then((reply) => {
       logChat(reply);
     })
