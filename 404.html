@@ -16,15 +16,16 @@
         new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
       }
     </script>
-    <script defer src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <script defer src="https://cdn.jsdelivr.net/gh/SomajitDey/webtools@0.0.0/spa/spa.min.js"></script>
     <script type="module" src="script.js"></script>
+    <script defer src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
   </head>
 
-  <body onload="spaHide('jsAlert');">
-    <p class="alert alert-danger" id="jsAlert">You don't have JavaScript enabled! This page cannot function without it.</p>    
+  <body>
 
   <section class="spa-page container-fluid" id="loading">
+    <p class="alert alert-danger" id="jsAlert">You don't have JavaScript enabled! This page cannot function without it.</p>
+    <script>document.getElementById('jsAlert').hidden = true;</script>
     <p>Loading...</p>
   </section>
   
