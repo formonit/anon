@@ -1,4 +1,4 @@
-import securelayEndpoint from 'https://cdn.jsdelivr.net/gh/securelay/api@v0.0.1/script.js';
+import securelayEndpoint from 'https://cdn.jsdelivr.net/gh/securelay/api@main/script.js';
 
 // Brief: Returns the first 5 hex chars from a v4 UUID as a unique string
 function newVisitorID () {
