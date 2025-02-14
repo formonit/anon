@@ -97,7 +97,7 @@ async function setupForm (formActionURL, visitorID) {
     logChat(msg, false);
   });
 
-  await setupGeolocation(contactForm.elements.location);
+  await setupGeolocation(contactForm.elements.Location);
 }
 
 function submitNewView (formActionURL) {
