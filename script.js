@@ -25,7 +25,7 @@ async function validate () {
 
     const visitorID = newVisitorID();
     localStorage.setItem(cacheKey, visitorID);
-    submitNewView(formActionURL);
+    submitNewView(securelayPubKey);
     return { formActionURL, visitorID };
   } catch (err) {
     return false;
@@ -100,10 +100,10 @@ async function setupForm (formActionURL, visitorID) {
   await setupGeolocation(contactForm.elements.Location);
 }
 
-function submitNewView (formActionURL) {
-  const viewCounterForm = document.forms.viewCounter;
-  viewCounterForm.action = formActionURL;
-  viewCounterForm.submit();
+async function submitNewView (securelayPubKey) {
+  const formID = document.forms.contact.elements.FormID.value;
+  const url = `https://api.counterapi.dev/v1/${securelayPubKey}/${encodeURIComponent(formID)}/up`;
+  return fetch(url).catch((err) => {});
 }
 
 async function init () {
